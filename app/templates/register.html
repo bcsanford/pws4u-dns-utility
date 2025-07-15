@@ -1,104 +1,21 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <title>Register New User - PWS4U DNS Utility</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #eef2f5;
-            margin: 0;
-            padding: 0;
-        }
-        .container {
-            max-width: 420px;
-            margin: 60px auto;
-            padding: 20px;
-            background-color: white;
-            border-radius: 8px;
-            box-shadow: 0 0 10px #ccc;
-        }
-        h2 {
-            text-align: center;
-        }
-        form input[type="text"],
-        form input[type="password"] {
-            width: 100%;
-            padding: 10px;
-            margin: 8px 0 16px 0;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-        }
-        form input[type="checkbox"] {
-            margin-right: 6px;
-        }
-        .form-group {
-            margin-bottom: 12px;
-        }
-        .submit-btn {
-            width: 100%;
-            padding: 10px;
-            background-color: #4a90e2;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        .submit-btn:hover {
-            background-color: #357abd;
-        }
-        .msg {
-            text-align: center;
-            color: #c00;
-            margin-bottom: 12px;
-        }
-        .msg.success {
-            color: green;
-        }
-        .back-link {
-            text-align: center;
-            margin-top: 16px;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h2>Create New User</h2>
-
-        {% if error %}
-        <div class="msg">{{ error }}</div>
-        {% endif %}
-
-        {% if success %}
-        <div class="msg success">{{ success }}</div>
-        {% endif %}
-
-        <form method="POST">
-            <div class="form-group">
-                <label>Username</label>
-                <input type="text" name="username" required />
-            </div>
-
-            <div class="form-group">
-                <label>Password</label>
-                <input type="password" name="password" required />
-            </div>
-
-            <div class="form-group">
-                <label>Discord Username (optional)</label>
-                <input type="text" name="discord_username" />
-            </div>
-
-            <div class="form-group">
-                <label><input type="checkbox" name="is_admin" /> Grant admin privileges</label>
-            </div>
-
-            <button class="submit-btn" type="submit">Create User</button>
-        </form>
-
-        <div class="back-link">
-            <a href="{{ url_for('main.index') }}">← Back to Dashboard</a>
-        </div>
+{% extends "layout.html" %}
+{% block title %}Register User - PWS4U{% endblock %}
+{% block content %}
+<h2>Register New User</h2>
+<form method="POST">
+    {{ form.hidden_tag() }}
+    <div class="mb-3">
+        {{ form.username.label(class="form-label") }}
+        {{ form.username(class="form-control") }}
     </div>
-</body>
-</html>
+    <div class="mb-3">
+        {{ form.password.label(class="form-label") }}
+        {{ form.password(class="form-control") }}
+    </div>
+    <div class="form-check mb-3">
+        {{ form.is_admin(class="form-check-input") }}
+        {{ form.is_admin.label(class="form-check-label") }}
+    </div>
+    {{ form.submit(class="btn btn-success") }}
+</form>
+{% endblock %}
