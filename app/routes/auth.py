@@ -1,65 +1,45 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash
-from flask_login import login_user, logout_user, login_required, current_user
-from .. import db
-from ..models import User
-from ..utils import verify_password, hash_password
-from sqlalchemy.exc import IntegrityError
+from flask import Blueprint, render_template, redirect, url_for, flash, request
+from flask_login import login_user, logout_user, current_user, login_required
+from app import db, bcrypt
+from app.models import User
+from app.forms import LoginForm, RegisterForm
 
-auth = Blueprint("auth", __name__)
+auth_bp = Blueprint("auth", __name__)
 
-@auth.route("/login", methods=["GET", "POST"])
+@auth_bp.route("/login", methods=["GET", "POST"])
 def login():
-    if request.method == "POST":
-        username = request.form.get("username").strip()
-        password = request.form.get("password")
-
-        user = User.query.filter_by(username=username).first()
-        if user and verify_password(password, user.password_hash):
-            login_user(user)
-            return redirect(url_for("main.index"))
+    if current_user.is_authenticated:
+        return redirect(url_for("admin.dashboard"))
+    form = LoginForm()
+    if form.validate_on_submit():
+        user = User.query.filter_by(username=form.username.data).first()
+        if user and bcrypt.check_password_hash(user.password, form.password.data):
+            login_user(user, remember=True)
+            flash("Logged in successfully.", "success")
+            return redirect(url_for("admin.dashboard"))
         else:
-            return render_template("login.html", error="Invalid username or password.")
+            flash("Invalid username or password.", "danger")
+    return render_template("login.html", form=form)
 
-    return render_template("login.html")
-
-@auth.route("/logout")
+@auth_bp.route("/logout")
 @login_required
 def logout():
     logout_user()
+    flash("You have been logged out.", "info")
     return redirect(url_for("auth.login"))
 
-@auth.route('/register', methods=['GET', 'POST'])
+@auth_bp.route("/register", methods=["GET", "POST"])
 @login_required
 def register():
-    # Only allow access if the current user is admin
     if not current_user.is_admin:
-        flash("Unauthorized access. Admins only.", "danger")
-        return redirect(url_for('main.index'))
-
-    if request.method == 'POST':
-        username = request.form.get('username').strip()
-        password = request.form.get('password')
-        discord_username = request.form.get('discord_username').strip() or None
-        is_admin = bool(request.form.get('is_admin'))
-
-        if not username or not password:
-            return render_template("register.html", error="Username and password are required.")
-
-        if User.query.filter_by(username=username).first():
-            return render_template("register.html", error="Username already exists.")
-
-        try:
-            new_user = User(
-                username=username,
-                password_hash=hash_password(password),
-                discord_username=discord_username,
-                is_admin=is_admin
-            )
-            db.session.add(new_user)
-            db.session.commit()
-            return render_template("register.html", success=f"User '{username}' created successfully.")
-        except IntegrityError:
-            db.session.rollback()
-            return render_template("register.html", error="Failed to create user due to database error.")
-
-    return render_template("register.html")
+        flash("Access denied.", "danger")
+        return redirect(url_for("auth.login"))
+    form = RegisterForm()
+    if form.validate_on_submit():
+        hashed = bcrypt.generate_password_hash(form.password.data).decode("utf-8")
+        user = User(username=form.username.data, password=hashed, is_admin=form.is_admin.data)
+        db.session.add(user)
+        db.session.commit()
+        flash("User registered successfully.", "success")
+        return redirect(url_for("admin.dashboard"))
+    return render_template("register.html", form=form)
