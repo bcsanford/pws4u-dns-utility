@@ -1,9 +1,32 @@
-from flask import render_template, request, redirect, url_for, flash
-from flask_login import login_required, current_user
+from flask import Blueprint, render_template, request, redirect, url_for, flash
+from flask_login import login_user, logout_user, login_required, current_user
 from .. import db
 from ..models import User
-from ..utils import hash_password
+from ..utils import verify_password, hash_password
 from sqlalchemy.exc import IntegrityError
+
+auth = Blueprint("auth", __name__)
+
+@auth.route("/login", methods=["GET", "POST"])
+def login():
+    if request.method == "POST":
+        username = request.form.get("username").strip()
+        password = request.form.get("password")
+
+        user = User.query.filter_by(username=username).first()
+        if user and verify_password(password, user.password_hash):
+            login_user(user)
+            return redirect(url_for("main.index"))
+        else:
+            return render_template("login.html", error="Invalid username or password.")
+
+    return render_template("login.html")
+
+@auth.route("/logout")
+@login_required
+def logout():
+    logout_user()
+    return redirect(url_for("auth.login"))
 
 @auth.route('/register', methods=['GET', 'POST'])
 @login_required
