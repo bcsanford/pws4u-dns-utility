@@ -1,0 +1,9 @@
+flask
+flask-bcrypt
+flask-sqlalchemy
+flask-login
+mysql-connector-python
+python-dotenv
+dnspython
+apscheduler
+discord.py
