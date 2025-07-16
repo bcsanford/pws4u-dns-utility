@@ -1,0 +1,35 @@
+name: Generate and Upload SHA256 Hashes for Release Assets
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  generate-hashes:
+    name: Generate SHA256 Hashes
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository (needed for GitHub context)
+      uses: actions/checkout@v4
+
+    - name: Download release assets
+      uses: robinraju/release-downloader@v1
+      with:
+        repository: ${{ github.repository }}
+        tag: ${{ github.event.release.tag_name }}
+        out-file-path: downloaded-assets
+
+    - name: Generate SHA256 hashes
+      run: |
+        cd downloaded-assets
+        for file in *; do
+          sha256sum "$file" > "$file.sha256"
+        done
+
+    - name: Upload SHA256 files to release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: downloaded-assets/*.sha256
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
