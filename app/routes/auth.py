@@ -9,14 +9,14 @@ auth_bp = Blueprint("auth", __name__)
 @auth_bp.route("/login", methods=["GET", "POST"])
 def login():
     if current_user.is_authenticated:
-        return redirect(url_for("admin.dashboard"))
+        return redirect(url_for("admin.admin_dashboard"))
     form = LoginForm()
     if form.validate_on_submit():
         user = User.query.filter_by(username=form.username.data).first()
         if user and bcrypt.check_password_hash(user.password, form.password.data):
             login_user(user, remember=True)
             flash("Logged in successfully.", "success")
-            return redirect(url_for("admin.dashboard"))
+            return redirect(url_for("admin.admin_dashboard"))
         else:
             flash("Invalid username or password.", "danger")
     return render_template("login.html", form=form)
@@ -41,5 +41,5 @@ def register():
         db.session.add(user)
         db.session.commit()
         flash("User registered successfully.", "success")
-        return redirect(url_for("admin.dashboard"))
+        return redirect(url_for("admin.admin_dashboard"))
     return render_template("register.html", form=form)
