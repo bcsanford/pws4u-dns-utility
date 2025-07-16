@@ -6,5 +6,5 @@ main_bp = Blueprint("main", __name__)
 @main_bp.route("/")
 def index():
     if current_user.is_authenticated:
-        return redirect(url_for("admin.dashboard"))
+        return redirect(url_for("admin.admin_dashboard"))
     return redirect(url_for("auth.login"))
