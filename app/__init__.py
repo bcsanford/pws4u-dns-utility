@@ -16,7 +16,9 @@ login_manager.login_message_category = "warning"
 def create_app():
     app = Flask(__name__)
     app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "insecure-default")
-    app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URI", "mysql+mysqlconnector://pws4u:password@localhost/pws4u")
+    app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get(
+        "DATABASE_URI", "mysql+mysqlconnector://pws4u:password@localhost/pws4u"
+    )
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
     db.init_app(app)
@@ -25,8 +27,10 @@ def create_app():
 
     from .routes.auth import auth_bp
     from .routes.admin import admin_bp
+    from .routes.main import main_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(admin_bp)
+    app.register_blueprint(main_bp)
 
     return app
