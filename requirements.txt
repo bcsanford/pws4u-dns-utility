@@ -7,3 +7,4 @@ python-dotenv
 dnspython
 apscheduler
 discord.py
+flask-wtf
